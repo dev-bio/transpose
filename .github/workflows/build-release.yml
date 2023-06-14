@@ -40,7 +40,7 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: gh release create ${{ github.ref }} --notes-file README.md
+        run: gh release create ${{ github.ref_name }} --notes-file README.md
   upload-release:
     name: Upload Release
     needs: create-release
@@ -66,5 +66,5 @@ jobs:
         run: |
           for i in $( ls ); do
             mv $i ${{ matrix.platform }}-$i && \
-            gh release upload ${{ github.ref }} ${{ matrix.platform }}-$i
+            gh release upload ${{ github.ref_name }} ${{ matrix.platform }}-$i
           done
