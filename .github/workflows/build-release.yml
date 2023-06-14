@@ -60,6 +60,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+        
+          gh repo clone ${{ github.repository }} . --no-checkout
+
           for i in $( ls ); do
             mv $i ${{ matrix.platform }}-$i && \
             gh release upload ${{ github.ref_name }} ${{ matrix.platform }}-$i
