@@ -1,0 +1,11 @@
+[package]
+name = "transpose"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.71"
+clap = { version = "4.3.3", features = ["derive"] }
+serde = "1.0.164"
+serde_json = { version = "1.0.96", features = ["preserve_order"] }
+serde_yaml = "0.9.21"

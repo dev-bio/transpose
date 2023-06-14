@@ -1,0 +1,70 @@
+name: Build & Release
+run-name: release-build
+
+on:
+  push:
+    tags: [ '[0-9]+.[0-9]+.[0-9]+' ]
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      matrix:
+        platform: [ windows-latest, ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Build Release
+        run: cargo build --release
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          if-no-files-found: ignore
+          name: ${{ github.event.repository.name }}-${{ matrix.platform }}
+          path: |
+            target/release/transpose
+            target/release/transpose.exe
+  create-release:
+    name: Create Release
+    needs: build
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          sparse-checkout: README.md
+      - name: Create Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create ${{ github.ref }} --notes-file README.md
+  upload-release:
+    name: Upload Release
+    needs: create-release
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        platform: [ windows-latest, ubuntu-latest, macos-latest ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          sparse-checkout: .
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.event.repository.name }}-${{ matrix.platform }}
+      - name: Release Artifacts
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for i in $( ls ); do
+            mv $i ${{ matrix.platform }}-$i && \
+            gh release upload ${{ github.ref }} ${{ matrix.platform }}-$i
+          done
