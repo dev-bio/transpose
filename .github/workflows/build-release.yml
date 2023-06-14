@@ -61,7 +61,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
 
-          gh repo clone ${{ github.repository }} . -- --no-checkout
+          gh repo clone ${{ github.repository }} .git -- --bare && \
+          git config --unset core.bare
 
           for i in $( ls ); do
             mv $i ${{ matrix.platform }}-$i && \
